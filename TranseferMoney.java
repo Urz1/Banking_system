@@ -6,10 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +41,7 @@ public class TranseferMoney implements ActionListener {
                 
 
                 button.setActionCommand(rs.getString("Account_Number"));
+                // button.setActionCommandFromAction(button.setEnabled(false));
                 button.addActionListener(this);
 
                 panel.setLayout(new GridLayout(1, 0));
@@ -59,15 +57,22 @@ public class TranseferMoney implements ActionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         String Account=e.getActionCommand();
+        TransferPage transferPage=new TransferPage(Account);
+        frame.dispose();
+        
         System.out.println(Account);
+
         if (e.getSource()==Account){
             button.setEnabled(false);
 
         }
     }
+
+    
 }
