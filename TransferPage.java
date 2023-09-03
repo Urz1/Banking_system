@@ -1,11 +1,9 @@
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.*;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
 import java.sql.*;
+import java.awt.*;
 import java.util.jar.Attributes.Name;
 
 public class TransferPage extends JFrame implements ActionListener {
@@ -18,17 +16,28 @@ public class TransferPage extends JFrame implements ActionListener {
     String AccountNumber;
     String Sex;
     String Balance;
+
+    // Creating some swing components
     JComboBox<String> comboBox = new JComboBox<>();
     JTextField textField = new JTextField();
+
+    GridBagLayout layout = new GridBagLayout();
+    GridBagConstraints constraints = new GridBagConstraints();
+    JLabel label, label1, label2;
+    JButton submitButton,BackButton;
 
     TransferPage(String Account_Number) {
         String query = "select * from user where Account_Number=" + Account_Number;
         setSize(500, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
-        setLayout(null);
+
+        // creating a label
         JLabel label = new JLabel("TRANSACTION ");
-        add(label, BorderLayout.CENTER);
+        JLabel label1 = new JLabel("Amount to be transffered :");
+        JLabel label2 = new JLabel("Choose Account: ");
+
+        setLayout(layout);
 
         try (
 
@@ -53,23 +62,14 @@ public class TransferPage extends JFrame implements ActionListener {
             };
             String[] columnNames = { "First Name", "Last Name", "Age" };
             JTable table = new JTable(data, columnNames);
-            table.setBounds(20, 70, 450, 50);
-            add(table);
 
             // Adding account choice and amount along submit button to complete the
-            // transaction
-
-            
-            JButton submitButton = new JButton("Submit ");
-
+            submitButton = new JButton("Submit ");
+            BackButton=new JButton("Back");
             submitButton.addActionListener(this);
-            submitButton.setBounds(100, 200, 100, 40);
-            textField.setPreferredSize(new Dimension(250, 40));
-            textField.setBounds(20, 150, 200, 40);
+            BackButton.addActionListener(this);
 
-            // Creating a Combobox to choose an account to trasfer into
-            
-            comboBox.setBounds(20, 250, 200, 40);
+            // transaction
             try {
                 Statement statement2 = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE);
@@ -82,16 +82,57 @@ public class TransferPage extends JFrame implements ActionListener {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.weightx = 1.0;
+            constraints.weighty = 0.0;
+            constraints.insets = new Insets(5, 15, 10, 20);
+
+
 
             // adding the components to the frame
-            add(submitButton);
-            add(textField);
-            add(comboBox);
+            addComponent(label, 0, 0, 1, 1); // Span across 2 columns
+            
+            // Add the table right below the label
+            addComponent(table, 0, 1, 2, 1); // Span across 2 columns
+
+            // Add the text field and combo box side by side below the table
+            addComponent(textField, 0, 3, 1, 1); // Text field on the left
+            addComponent(label1, 0, 2, 1, 1);
+            addComponent(comboBox, 1, 3, 1, 1); // Combo box on the right
+            addComponent(label2, 1, 2, 1, 1);
+            
+            // Add the submit button below, centered by spanning across both columns
+            addComponent(submitButton, 1, 4, 1, 1); // Span across 2 columns
+            addComponent(BackButton, 0, 4, 1, 1);
+
+
+           
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void addComponent(Component component,
+            int row,
+            int column,
+            int width,
+            int height) {
+        // Check if the component is null
+        if (component == null) {
+            // Print an error message and return
+            System.err.println("Cannot add a null component");
+            return;
+        }
+        constraints.gridx = row;
+        constraints.gridy = column;
+        constraints.gridheight = height;
+        constraints.gridwidth = width;
+
+        layout.setConstraints(component, constraints); // set the constraints on the component
+
+        add(component);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -101,10 +142,8 @@ public class TransferPage extends JFrame implements ActionListener {
         String[] words = selectedItem.split(", ");
         System.out.println(words[1]);
 
-
         // accessing the value to be transffered to the user
-        String amount=textField.getText();
-
+        String amount = textField.getText();
 
         // implementing transaciton while money transfer
         try {
@@ -116,10 +155,11 @@ public class TransferPage extends JFrame implements ActionListener {
                 Statement statement3 = connection2.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
                         ResultSet.CONCUR_UPDATABLE);
 
-                
                 statement3.executeUpdate(
-                        "UPDATE `user` SET `Initial_Balance`=`Initial_Balance`+"+amount+" WHERE `Account_Number`="+words[1] );
-                statement3.executeUpdate("UPDATE `user` SET `Initial_Balance`=`Initial_Balance`-"+amount+" WHERE `Account_Number`="+AccountNumber );
+                        "UPDATE `user` SET `Initial_Balance`=`Initial_Balance`+" + amount + " WHERE `Account_Number`="
+                                + words[1]);
+                statement3.executeUpdate("UPDATE `user` SET `Initial_Balance`=`Initial_Balance`-" + amount
+                        + " WHERE `Account_Number`=" + AccountNumber);
 
                 connection2.commit();
             } catch (Exception exception) {
